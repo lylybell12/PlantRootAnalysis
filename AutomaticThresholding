@@ -1,0 +1,123 @@
+import skimage.io
+import numpy as np
+#get rid of the white borders completely and cleanly
+from skimage.segmentation import clear_border 
+from skimage import measure 
+from skimage.measure import label
+import pandas as pd
+from numpy.core.numeric import False_
+import pandas as pd
+from pandas._libs.lib import fast_unique_multiple_list_gen
+from pathlib import Path
+
+## used to segement raw images
+def measure_pred(filename):
+
+      # read the original image, converting to grayscale on the fly
+      img = cv2.imread(filename)
+
+      #extracting red channel
+      img = img[:,:,2] 
+
+      pred_name = Path(filename).stem
+
+      #crop image used for labeling
+      crop_img = img[0:1999, 155:1600]
+
+      # median blur before thresholding
+      blurred_img = skimage.filters.median(img)
+
+      # perform automatic thresholding to produce a binary image
+      t = skimage.filters.threshold_li(blurred_img)
+      binary_mask = blurred_img > t
+
+      #boarder cleaner
+      clean_image = clear_border(binary_mask)
+
+      #crop image
+      final_image = clean_image[0:1999, 155:1600]
+
+      ##"connect disconnected components => dani"
+
+      #image labeling 
+      label_image = measure.label(final_image, connectivity = crop_img.ndim)
+
+      #labels = measure.label(label_image)
+      largestCC = label_image == np.argmax(np.bincount(label_image.flat, weights=label_image.flat))
+      
+      pred_final_image = largestCC.astype(np.uint8)
+
+      return pred_final_image, pred_name
+      
+## preps binary masked images (gorund truth) for measurement
+def measure_true(filename):
+
+      # read the original image
+      img = cv2.imread(filename, cv2.IMREAD_UNCHANGED)
+
+      true_name = Path(filename).stem
+
+      #crop image used for labeling
+      #crop_img = img[0:1999, 155:1702]
+
+      #image labeling 
+      #label_image = measure.label(img, connectivity = img.ndim)
+      #np.unique(label_image)
+
+      #img = img.astype(np.uint8)
+
+      ##"connect disconnected components => dani"
+
+      #image labeling 
+      label_image = measure.label(img, connectivity = img.ndim)
+
+      #labels = measure.label(label_image)
+      largestCC = label_image == np.argmax(np.bincount(label_image.flat, weights=label_image.flat))
+      
+      true_final_image = largestCC.astype(np.uint8)
+
+      return true_final_image, true_name     
+      
+## gets measurements of the plant roots
+
+def calculations(pred_final_image, true_final_image, pred_name, true_name):
+
+      #calculating measurements via region props
+      pred_props = measure.regionprops_table(pred_final_image, properties = ['area', 'perimeter', 'feret_diameter_max', 'solidity', 'convex_area', 'major_axis_length'])
+      pred_props["Name"] = pred_name
+
+      pred_df = pd.DataFrame(pred_props)  
+      
+      #calculating measurements via region props
+      true_props = measure.regionprops_table(true_final_image, properties = ['area', 'perimeter', 'feret_diameter_max', 'solidity', 'convex_area', 'major_axis_length'])
+      true_props["Name"] = true_name
+
+      true_df = pd.DataFrame(true_props)  
+
+      #converting to micron scale
+      scale = 0.6
+      pred_df['area_sq_microns'] = pred_df['area'] * (scale**2) #(scale_x * scale_y) 
+      pred_df['perimeter_microns'] = pred_df['perimeter'] * (scale)
+      pred_df['feret_diameter_max_microns'] = pred_df['feret_diameter_max'] * (scale)
+      pred_df['convex_area_microns'] = pred_df['convex_area'] * (scale)
+      pred_df['major_axis_length_microns'] = pred_df['major_axis_length'] * (scale)
+
+      true_df['area_sq_microns'] = true_df['area'] * (scale**2) #(scale_x * scale_y) 
+      true_df['perimeter_microns'] = true_df['perimeter'] * (scale)
+      true_df['feret_diameter_max_microns'] = true_df['feret_diameter_max'] * (scale)
+      true_df['convex_area_microns'] = true_df['convex_area'] * (scale)
+      true_df['major_axis_length_microns'] = true_df['major_axis_length'] * (scale)  
+      
+      return pred_df, true_df
+
+## optimization calculation    
+from sklearn.metrics import jaccard_score
+def dice_coef(pred_final_image, true_final_image, smooth=1):
+  true_f = true_final_image.flatten()
+  pred_f = pred_final_image.flatten()
+  
+  dice = jaccard_score(true_f[0], pred_f[0])
+  
+  #dice = distance.dice(pred_f, true_f)
+  print(dice)
+      
