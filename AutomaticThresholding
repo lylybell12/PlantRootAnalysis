@@ -1,6 +1,5 @@
 import skimage.io
 import numpy as np
-#get rid of the white borders completely and cleanly
 from skimage.segmentation import clear_border 
 from skimage import measure 
 from skimage.measure import label
