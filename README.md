@@ -1,9 +1,6 @@
 # PlantRootAnalysis
 Spring 2022 SULI Internship Program with Dr. Daniela Ushizima from Berkeley Laboratory. 
 
-# lylybell
-Ushizima working with Lylybell Teran in 2022
-
 # How to start the analysis
 1. Download and open `FINAL_ALGORITHMS` folder on Google Colaboratory (two files in folder)
 2. Run all code on a Python notebook
