@@ -1,6 +1,9 @@
 # PlantRootAnalysis
 Spring 2022 SULI Internship Program with Dr. Daniela Ushizima from Berkeley Laboratory. 
 
+# lylybell
+Ushizima working with Lylybell Teran in 2022
+
 # How to start the analysis
 1. Download and open `FINAL_ALGORITHMS` folder on Google Colaboratory (two files in folder)
 2. Run all code on a Python notebook
@@ -13,19 +16,19 @@ Spring 2022 SULI Internship Program with Dr. Daniela Ushizima from Berkeley Labo
 
 
 # Automatic Thresholding Algorithm
-The segmentation algorithms performs binary classification consisting of 4 steps: 
+The thresholding segmentation algorithms performs binary classification consisting of 4 steps: 
 - image denoising
-- applying automatic threshold
+- applying automatic threshold (Otsu v. Li)
 - background cleaning
 - implementing morphological operations
 
 
 # Machine Learning Classifiers
-The segmentation algorithms performs binary classification consisting of 4 steps: 
+The ML segmentation algorithms performs binary classification consisting of 4 steps: 
 - Background Cleaning
 - Feature Selection
 - Determine optimal classifier parameters
-- Train and Test Models
+- Train and Test Models (Random Forest v. MLP)
 
 # Measuring Plant Roots
 Recorded properties for scientific purposes within Berkeley Lab through `skimage.measure.regionprops()`
